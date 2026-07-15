@@ -427,7 +427,7 @@ if ingest_button and uploaded_files:
                 st.sidebar.error(f"Ingestion failed: {str(e)}")
 
 # --- Main App Layout ---
-st.markdown('<h1 class="gradient-title">RAG Research Assistant</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="gradient-title">RAG Based Research Assistant</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Fully browser-hosted paper analysis & question answering powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
 # Top Metric Stats (Dynamic Row)
