@@ -206,10 +206,17 @@ st.markdown("""
 
     /* Interactive animations for tabs and options */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        justify-content: center;
-    }
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
 
+.stTabs [data-baseweb="tab-border"] {
+    display: flex !important;
+    justify-content: center !important;
+}
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
