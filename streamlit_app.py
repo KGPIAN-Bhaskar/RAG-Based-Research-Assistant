@@ -208,22 +208,31 @@ st.markdown("""
    CENTER TABS
 =========================== */
 
+.stTabs{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
 .stTabs [data-baseweb="tab-list"]{
+    width:fit-content !important;
+    margin:0 auto !important;
     display:flex !important;
     justify-content:center !important;
-    align-items:center !important;
     gap:12px !important;
-    width:100% !important;
+}
+
+.stTabs [data-baseweb="tab-border"]{
+    display:none;
 }
 
 .stTabs [data-baseweb="tab"]{
-    height:50px;
+    height:48px;
+    padding:0 22px;
+    border-radius:10px 10px 0 0;
     background:rgba(30,41,59,.20);
     border:1px solid rgba(255,255,255,.05);
-    border-radius:10px 10px 0 0;
     color:#94a3b8;
-    padding:0 22px;
-    transition:.25s;
 }
 
 .stTabs [aria-selected="true"]{
