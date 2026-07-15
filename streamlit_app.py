@@ -205,34 +205,35 @@ st.markdown("""
     }
 
     /* ===========================
-   CENTER TABS
+   CENTER TABS - STREAMLIT 1.58
 =========================== */
 
 .stTabs{
     display:flex;
-    flex-direction:column;
-    align-items:center;
+    justify-content:center;
 }
 
-.stTabs [data-baseweb="tab-list"]{
-    width:fit-content !important;
-    margin:0 auto !important;
+.stTabs > div{
+    width:100%;
+}
+
+.stTabs [role="tablist"]{
     display:flex !important;
     justify-content:center !important;
+    align-items:center !important;
+    width:fit-content !important;
+    margin:0 auto !important;
     gap:12px !important;
 }
 
-.stTabs [data-baseweb="tab-border"]{
-    display:none;
-}
-
-.stTabs [data-baseweb="tab"]{
+.stTabs [role="tab"]{
     height:48px;
     padding:0 22px;
     border-radius:10px 10px 0 0;
     background:rgba(30,41,59,.20);
     border:1px solid rgba(255,255,255,.05);
     color:#94a3b8;
+    transition:.25s;
 }
 
 .stTabs [aria-selected="true"]{
