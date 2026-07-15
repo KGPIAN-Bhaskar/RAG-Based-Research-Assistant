@@ -213,10 +213,6 @@ st.markdown("""
     width: 100% !important;
 }
 
-.stTabs [data-baseweb="tab-border"] {
-    display: flex !important;
-    justify-content: center !important;
-}
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
