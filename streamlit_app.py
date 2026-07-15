@@ -233,10 +233,47 @@ st.markdown("""
         background-color: #10b981 !important;
         color: white !important;
     }
+    /* Chat input background - Black */
+[data-testid="stChatInput"] {
+    background: #000000 !important;
+    border: 1px solid #404040 !important;
+    border-radius: 14px !important;
+}
+
+/* Input field */
+[data-testid="stChatInput"] textarea {
+    background: #000000 !important;
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+}
+
+/* Placeholder */
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #bdbdbd !important;
+    opacity: 1 !important;
+}
     
     button[data-testid="stChatInputSubmitButton"]:hover {
         background-color: #059669 !important;
     }
+
+/* Clear Chat button */
+button[kind="secondary"] {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #404040 !important;
+    border-radius: 10px !important;
+}
+
+button[kind="secondary"]:hover {
+    background-color: #1a1a1a !important;
+    border-color: #666666 !important;
+}
+
+button[data-testid="stChatInputSubmitButton"] {
+    background-color: #10b981 !important;
+    color: white !important;
+}   
     </style>
 """, unsafe_allow_html=True)
 
