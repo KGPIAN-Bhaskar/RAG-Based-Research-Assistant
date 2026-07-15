@@ -14,7 +14,7 @@ load_dotenv()
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="Bhaskar's RAG Research Assistant",
+    page_title="Bhaskar's RAG Based Research Assistant",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -233,30 +233,59 @@ st.markdown("""
         background-color: #10b981 !important;
         color: white !important;
     }
-    /* Chat input background - Black */
-[data-testid="stChatInput"] {
-    background: #000000 !important;
-    border: 1px solid #404040 !important;
-    border-radius: 14px !important;
+    /* ===========================
+   CHAT INPUT - BLACK THEME
+=========================== */
+
+/* Outer chat box */
+div[data-testid="stChatInput"]{
+    background:#000000 !important;
+    border:1px solid #3d3d3d !important;
+    border-radius:14px !important;
+    padding:8px !important;
 }
 
-/* Input field */
-[data-testid="stChatInput"] textarea {
-    background: #000000 !important;
-    color: #ffffff !important;
-    caret-color: #ffffff !important;
+/* Remove Streamlit white wrapper */
+div[data-testid="stChatInput"] > div{
+    background:#000000 !important;
+}
+
+/* Text input */
+div[data-testid="stChatInput"] textarea{
+    background:#000000 !important;
+    color:#ffffff !important;
+    border:none !important;
+    box-shadow:none !important;
+    caret-color:#ffffff !important;
 }
 
 /* Placeholder */
-[data-testid="stChatInput"] textarea::placeholder {
-    color: #bdbdbd !important;
-    opacity: 1 !important;
+div[data-testid="stChatInput"] textarea::placeholder{
+    color:#9ca3af !important;
 }
-    
-    button[data-testid="stChatInputSubmitButton"]:hover {
-        background-color: #059669 !important;
-    }
 
+/* Focus */
+div[data-testid="stChatInput"]:focus-within{
+    border:1px solid #6366f1 !important;
+}
+
+/* Send button */
+button[data-testid="stChatInputSubmitButton"]{
+    background:#10b981 !important;
+    color:white !important;
+    border-radius:10px !important;
+}
+
+/* Clear Chat button */
+button[kind="secondary"]{
+    background:#000000 !important;
+    color:#ffffff !important;
+    border:1px solid #3d3d3d !important;
+}
+
+button[kind="secondary"]:hover{
+    background:#1a1a1a !important;
+}
 /* Clear Chat button */
 button[kind="secondary"] {
     background-color: #000000 !important;
