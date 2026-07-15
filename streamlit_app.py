@@ -204,33 +204,34 @@ st.markdown("""
         margin-top: 0.25rem;
     }
 
-    /* Interactive animations for tabs and options */
-    .stTabs [data-baseweb="tab-list"] {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 10px !important;
-    width: 100% !important;
+    /* ===========================
+   CENTER TABS
+=========================== */
+
+.stTabs [data-baseweb="tab-list"]{
+    display:flex !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:12px !important;
+    width:100% !important;
 }
 
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: rgba(30, 41, 59, 0.2);
-        border-radius: 8px 8px 0px 0px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        color: #94a3b8;
-        padding: 0px 20px;
-        transition: all 0.2s ease;
-    }
+.stTabs [data-baseweb="tab"]{
+    height:50px;
+    background:rgba(30,41,59,.20);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:10px 10px 0 0;
+    color:#94a3b8;
+    padding:0 22px;
+    transition:.25s;
+}
 
-    .stTabs [aria-selected="true"] {
-        background-color: rgba(99, 102, 241, 0.15) !important;
-        border-color: rgba(99, 102, 241, 0.3) !important;
-        color: #a5b4fc !important;
-        font-weight: 600;
-    }
-
+.stTabs [aria-selected="true"]{
+    background:rgba(99,102,241,.15)!important;
+    border-color:rgba(99,102,241,.35)!important;
+    color:#a5b4fc!important;
+    font-weight:600;
+}
     /* Green Send Button for st.chat_input */
     button[data-testid="stChatInputSubmitButton"] {
         background-color: #10b981 !important;
