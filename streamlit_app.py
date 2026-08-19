@@ -323,15 +323,41 @@ button[kind="secondary"]:hover {
 button[data-testid="stChatInputSubmitButton"] {
     background-color: #10b981 !important;
     color: white !important;
-}   
+}      
     /* Right Sidebar Custom Styling */
+    @media (min-width: 1200px) {
+        .block-container {
+            max-width: calc(100% - 330px) !important;
+            margin-left: 0 !important;
+            margin-right: 330px !important;
+            padding-right: 1.5rem !important;
+        }
+        .right-sidebar-fixed {
+            position: fixed;
+            top: 2rem;
+            right: 1.5rem;
+            width: 300px;
+            z-index: 100;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+    }
+
+    @media (max-width: 1199px) {
+        .right-sidebar-fixed {
+            position: relative;
+            width: 100%;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+
     .right-sidebar-panel {
         background-color: #111420;
         border: 1px solid #1e293b;
         border-radius: 16px;
         padding: 1.25rem 1.1rem;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        margin-top: 0.5rem;
     }
 
     .right-sidebar-header {
@@ -448,37 +474,40 @@ def render_query_performance_sidebar():
     total_str = format_ms(metrics.get("total_latency"))
 
     st.markdown(f"""
-        <div class="right-sidebar-panel">
-            <div class="right-sidebar-header">⚡ Query Performance</div>
-            
-            <div class="query-metric-card">
-                <div class="query-metric-label">Query Embedding Time</div>
-                <div class="query-metric-val">{emb_str}</div>
-            </div>
-            
-            <div class="query-metric-card">
-                <div class="query-metric-label">Vector Search Time</div>
-                <div class="query-metric-val">{search_str}</div>
-            </div>
-            
-            <div class="query-metric-card">
-                <div class="query-metric-label">Reranker Time</div>
-                <div class="query-metric-val">{rerank_str}</div>
-            </div>
-            
-            <div class="query-metric-card">
-                <div class="query-metric-label">LLM Time</div>
-                <div class="query-metric-val">{llm_str}</div>
-            </div>
-            
-            <hr class="query-metric-divider">
-            
-            <div class="query-metric-card total-latency-card">
-                <div class="query-metric-label">Total Query Latency</div>
-                <div class="query-metric-val total-latency-val">{total_str}</div>
+        <div class="right-sidebar-fixed">
+            <div class="right-sidebar-panel">
+                <div class="right-sidebar-header">⚡ Query Performance</div>
+                
+                <div class="query-metric-card">
+                    <div class="query-metric-label">Query Embedding Time</div>
+                    <div class="query-metric-val">{emb_str}</div>
+                </div>
+                
+                <div class="query-metric-card">
+                    <div class="query-metric-label">Vector Search Time</div>
+                    <div class="query-metric-val">{search_str}</div>
+                </div>
+                
+                <div class="query-metric-card">
+                    <div class="query-metric-label">Reranker Time</div>
+                    <div class="query-metric-val">{rerank_str}</div>
+                </div>
+                
+                <div class="query-metric-card">
+                    <div class="query-metric-label">LLM Time</div>
+                    <div class="query-metric-val">{llm_str}</div>
+                </div>
+                
+                <hr class="query-metric-divider">
+                
+                <div class="query-metric-card total-latency-card">
+                    <div class="query-metric-label">Total Query Latency</div>
+                    <div class="query-metric-val total-latency-val">{total_str}</div>
+                </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
+
 
 
 # --- Sidebar UI Configuration ---
@@ -609,170 +638,185 @@ if ingest_button and uploaded_files:
                 st.sidebar.error(f"Ingestion failed: {str(e)}")
 
 # --- Main App Layout ---
-main_layout_col, right_sidebar_col = st.columns([3.2, 1.0])
+st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
-with main_layout_col:
-    st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
+# Render Fixed Right-Side Performance Sidebar
+render_query_performance_sidebar()
 
-    # Top Metric Stats (Dynamic Grid Row - No nested st.columns)
-    total_chunks = sum(f["chunk_count"] for f in st.session_state.uploaded_files.values())
-    total_size = sum(f["size_bytes"] for f in st.session_state.uploaded_files.values()) / (1024 * 1024)
-    emb_time = st.session_state.get("doc_embedding_time", 0.0)
-
+# Top Metric Stats (Dynamic Row)
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
     st.markdown(f"""
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
-            <div class="metric-card">
-                <div class="metric-title">Gemini Model</div>
-                <div class="metric-val" style="font-size: 1.05rem; color: #a5b4fc; margin-top: 5px;">{selected_model_id}</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">Ingested Documents</div>
-                <div class="metric-val">{len(st.session_state.uploaded_files)}</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">Total Chunks</div>
-                <div class="metric-val">{total_chunks}</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">Database Size</div>
-                <div class="metric-val">{total_size:.2f} MB</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">Document Embedding Time</div>
-                <div class="metric-val">{emb_time:.1f} sec</div>
-            </div>
+        <div class="metric-card">
+            <div class="metric-title">Gemini Model</div>
+            <div class="metric-val" style="font-size: 1.1rem; color: #a5b4fc; margin-top: 5px;">{selected_model_id}</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Main Application Tabs
-    tab_chat, tab_summary, tab_insights = st.tabs([
-        "💬 Research Chat",
-        "📄 Document Summarizer",
-        "📊 Key Insights & Q&A"
-    ])
+with col2:
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">Ingested Documents</div>
+            <div class="metric-val">{len(st.session_state.uploaded_files)}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # --- TAB 1: Chat Interface ---
-    with tab_chat:
-        if not st.session_state.vector_db or not st.session_state.vector_db.collection:
-            st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
+with col3:
+    total_chunks = sum(f["chunk_count"] for f in st.session_state.uploaded_files.values())
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">Total Chunks</div>
+            <div class="metric-val">{total_chunks}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-        if st.session_state.chat_history:
-            if st.button("Clear Chat", type="secondary"):
-                st.session_state.chat_history = []
-                st.rerun()
+with col4:
+    total_size = sum(f["size_bytes"] for f in st.session_state.uploaded_files.values()) / (1024 * 1024)
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">Database Size</div>
+            <div class="metric-val">{total_size:.2f} MB</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-        # Container to render chat history
-        chat_container = st.container()
+with col5:
+    emb_time = st.session_state.get("doc_embedding_time", 0.0)
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">Document Embedding Time</div>
+            <div class="metric-val">{emb_time:.1f} sec</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-        with chat_container:
-            for idx, chat in enumerate(st.session_state.chat_history):
-                if chat["role"] == "user":
-                    st.markdown(f"""
-                        <div class="chat-bubble user-bubble">
-                            <div class="chat-header" style="color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 1.1rem;">👨‍💻</span> <span>YOU</span>
-                            </div>
-                            {chat["content"]}
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    # Build citations list
-                    citation_html = ""
-                    if chat.get("sources"):
-                        citation_html += '<div class="citation-container">'
-                        for src in chat["sources"]:
-                            citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
-                        citation_html += '</div>'
-                    
-                    st.markdown(f"""
-                        <div class="chat-bubble assistant-bubble">
-                            <div class="chat-header" style="color: #a5b4fc; display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 1.1rem;">🎓</span> <span>RESEARCH ASSISTANT</span>
-                            </div>
-                            <div>{chat["content"]}</div>
-                            {citation_html}
-                        </div>
-                    """, unsafe_allow_html=True)
+# Main Application Tabs
+tab_chat, tab_summary, tab_insights = st.tabs([
+    "💬 Research Chat",
+    "📄 Document Summarizer",
+    "📊 Key Insights & Q&A"
+])
 
-        # Chat input box
-        user_query = st.chat_input("Ask a question about your uploaded research papers...")
+# --- TAB 1: Chat Interface ---
+with tab_chat:
+    if not st.session_state.vector_db or not st.session_state.vector_db.collection:
+        st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
 
-        if user_query:
-            # Display user query instantly
-            with chat_container:
+    if st.session_state.chat_history:
+        if st.button("Clear Chat", type="secondary"):
+            st.session_state.chat_history = []
+            st.rerun()
+
+    # Container to render chat history
+    chat_container = st.container()
+
+    with chat_container:
+        for idx, chat in enumerate(st.session_state.chat_history):
+            if chat["role"] == "user":
                 st.markdown(f"""
                     <div class="chat-bubble user-bubble">
                         <div class="chat-header" style="color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 8px;">
                             <span style="font-size: 1.1rem;">👨‍💻</span> <span>YOU</span>
                         </div>
-                        {user_query}
+                        {chat["content"]}
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                # Build citations list
+                citation_html = ""
+                if chat.get("sources"):
+                    citation_html += '<div class="citation-container">'
+                    for src in chat["sources"]:
+                        citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
+                    citation_html += '</div>'
+                
+                st.markdown(f"""
+                    <div class="chat-bubble assistant-bubble">
+                        <div class="chat-header" style="color: #a5b4fc; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.1rem;">🎓</span> <span>RESEARCH ASSISTANT</span>
+                        </div>
+                        <div>{chat["content"]}</div>
+                        {citation_html}
                     </div>
                 """, unsafe_allow_html=True)
 
-            st.session_state.chat_history.append({"role": "user", "content": user_query})
+    # Chat input box
+    user_query = st.chat_input("Ask a question about your uploaded research papers...")
 
-            # Process retrieval and answer generation with latency timing
-            retrieved_sources = []
-            context_str = ""
-            
-            query_emb_time = 0.0
-            vector_search_time = 0.0
-            reranker_time = 0.0
-            llm_time = 0.0
-            
-            if st.session_state.vector_db and st.session_state.vector_db.collection:
-                # 1. Query Embedding Time
-                t0_emb = time.perf_counter()
-                query_embeddings = st.session_state.vector_db.emb_fn([user_query])
-                t1_emb = time.perf_counter()
-                query_emb_time = t1_emb - t0_emb
+    if user_query:
+        # Display user query instantly
+        with chat_container:
+            st.markdown(f"""
+                <div class="chat-bubble user-bubble">
+                    <div class="chat-header" style="color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.1rem;">👨‍💻</span> <span>YOU</span>
+                    </div>
+                    {user_query}
+                </div>
+            """, unsafe_allow_html=True)
 
-                # 2. Vector Search Time (query ChromaDB with pre-computed query embedding)
-                t0_vec = time.perf_counter()
-                results = st.session_state.vector_db.collection.query(
-                    query_embeddings=query_embeddings,
-                    n_results=top_k
-                )
-                t1_vec = time.perf_counter()
-                vector_search_time = t1_vec - t0_vec
+        st.session_state.chat_history.append({"role": "user", "content": user_query})
+
+        # Process retrieval and answer generation with latency timing
+        retrieved_sources = []
+        context_str = ""
+        
+        query_emb_time = 0.0
+        vector_search_time = 0.0
+        reranker_time = 0.0
+        llm_time = 0.0
+        
+        if st.session_state.vector_db and st.session_state.vector_db.collection:
+            # 1. Query Embedding Time
+            t0_emb = time.perf_counter()
+            query_embeddings = st.session_state.vector_db.emb_fn([user_query])
+            t1_emb = time.perf_counter()
+            query_emb_time = t1_emb - t0_emb
+
+            # 2. Vector Search Time (query ChromaDB with pre-computed query embedding)
+            t0_vec = time.perf_counter()
+            results = st.session_state.vector_db.collection.query(
+                query_embeddings=query_embeddings,
+                n_results=top_k
+            )
+            t1_vec = time.perf_counter()
+            vector_search_time = t1_vec - t0_vec
+            
+            # Format retrieved context after Reranking
+            if results and results["documents"] and results["documents"][0]:
+                candidate_docs = results["documents"][0]
+                candidate_metadatas = results["metadatas"][0]
                 
-                # Format retrieved context after Reranking
-                if results and results["documents"] and results["documents"][0]:
-                    candidate_docs = results["documents"][0]
-                    candidate_metadatas = results["metadatas"][0]
+                # 3. Reranker Time
+                t0_rerank = time.perf_counter()
+                reranked_docs, reranked_metadatas, _ = st.session_state.reranker.rerank(
+                    query=user_query,
+                    documents=candidate_docs,
+                    metadatas=candidate_metadatas,
+                    top_p=top_p
+                )
+                t1_rerank = time.perf_counter()
+                reranker_time = t1_rerank - t0_rerank
+                
+                # De-duplicate citations for UI representation
+                seen_citations = set()
+                
+                context_chunks = []
+                for i, doc_text in enumerate(reranked_docs):
+                    meta = reranked_metadatas[i]
+                    source_name = meta.get("source", "Unknown")
+                    page_no = meta.get("page", 1)
                     
-                    # 3. Reranker Time
-                    t0_rerank = time.perf_counter()
-                    reranked_docs, reranked_metadatas, _ = st.session_state.reranker.rerank(
-                        query=user_query,
-                        documents=candidate_docs,
-                        metadatas=candidate_metadatas,
-                        top_p=top_p
-                    )
-                    t1_rerank = time.perf_counter()
-                    reranker_time = t1_rerank - t0_rerank
+                    context_chunks.append(f"Source: {source_name} | Page: {page_no}\nContent: {doc_text}")
                     
-                    # De-duplicate citations for UI representation
-                    seen_citations = set()
-                    
-                    context_chunks = []
-                    for i, doc_text in enumerate(reranked_docs):
-                        meta = reranked_metadatas[i]
-                        source_name = meta.get("source", "Unknown")
-                        page_no = meta.get("page", 1)
-                        
-                        context_chunks.append(f"Source: {source_name} | Page: {page_no}\nContent: {doc_text}")
-                        
-                        citation_key = (source_name, page_no)
-                        if citation_key not in seen_citations:
-                            seen_citations.add(citation_key)
-                            retrieved_sources.append({"source": source_name, "page": page_no})
-                    
-                    context_str = "\n\n---\n\n".join(context_chunks)
+                    citation_key = (source_name, page_no)
+                    if citation_key not in seen_citations:
+                        seen_citations.add(citation_key)
+                        retrieved_sources.append({"source": source_name, "page": page_no})
+                
+                context_str = "\n\n---\n\n".join(context_chunks)
 
-            # Build research system prompt
-            system_prompt = f"""You are a professional RAG Research Assistant. 
+        # Build research system prompt
+        system_prompt = f"""You are a professional RAG Research Assistant. 
 Your objective is to provide a comprehensive, academically structured answer to the query based ONLY on the context below. 
 
 If the provided context does not contain enough information to answer, state clearly: "I cannot find the answer in the provided documents." 
@@ -782,86 +826,86 @@ CONTEXT:
 {context_str if context_str else "No documents uploaded. Assist with general knowledge."}
 """
 
-            # Generate Streaming Response & Measure LLM Time
-            with chat_container:
-                assistant_placeholder = st.empty()
-                full_response = ""
+        # Generate Streaming Response & Measure LLM Time
+        with chat_container:
+            assistant_placeholder = st.empty()
+            full_response = ""
+            try:
+                t0_llm = time.perf_counter()
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_content_stream(
+                    model=selected_model_id,
+                    contents=f"{system_prompt}\n\nQuery: {user_query}"
+                )
+                
+                citation_html = ""
+                if retrieved_sources:
+                    citation_html += '<div class="citation-container">'
+                    for src in retrieved_sources:
+                        citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
+                    citation_html += '</div>'
+
+                for chunk in response:
+                    if chunk.text:
+                        full_response += chunk.text
+                    
+                    assistant_placeholder.markdown(f"""
+                        <div class="chat-bubble assistant-bubble">
+                            <div class="chat-header" style="color: #a5b4fc; display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.1rem;">🎓</span> <span>RESEARCH ASSISTANT</span>
+                            </div>
+                            <div>{full_response}</div>
+                            {citation_html}
+                        </div>
+                    """, unsafe_allow_html=True)
+                
+                t1_llm = time.perf_counter()
+                llm_time = t1_llm - t0_llm
+
+                total_latency = query_emb_time + vector_search_time + reranker_time + llm_time
+
+                st.session_state.query_metrics = {
+                    "query_embedding_time": query_emb_time * 1000,
+                    "vector_search_time": vector_search_time * 1000,
+                    "reranker_time": reranker_time * 1000,
+                    "llm_time": llm_time * 1000,
+                    "total_latency": total_latency * 1000
+                }
+                
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": full_response,
+                    "sources": retrieved_sources
+                })
+                
+            except Exception as e:
+                st.error(f"Error generating answer: {str(e)}")
+
+        st.rerun()
+
+# --- TAB 2: Document Summarizer ---
+with tab_summary:
+    st.markdown('<h2 style="color: white;">📄 Document Executive Summarizer</h2>', unsafe_allow_html=True)
+    st.write("Select an uploaded paper to generate an automatic executive summary using the entire document text.")
+    
+    if not st.session_state.vector_db or not st.session_state.vector_db.collection or not st.session_state.uploaded_files:
+        st.info("Please upload and process documents in the sidebar to unlock document summarization.")
+    else:
+        selected_file = st.selectbox("Choose Document to Summarize", list(st.session_state.uploaded_files.keys()))
+        
+        if st.button("Generate Summary", type="primary"):
+            with st.spinner("Extracting content and writing summary..."):
                 try:
-                    t0_llm = time.perf_counter()
-                    client = genai.Client(api_key=api_key)
-                    response = client.models.generate_content_stream(
-                        model=selected_model_id,
-                        contents=f"{system_prompt}\n\nQuery: {user_query}"
+                    # Retrieve all chunks for this specific file from Vector DB
+                    results = st.session_state.vector_db.get_documents_by_metadata(
+                        where_clause={"source": selected_file}
                     )
                     
-                    citation_html = ""
-                    if retrieved_sources:
-                        citation_html += '<div class="citation-container">'
-                        for src in retrieved_sources:
-                            citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
-                        citation_html += '</div>'
-
-                    for chunk in response:
-                        if chunk.text:
-                            full_response += chunk.text
+                    if results and results["documents"]:
+                        full_doc_text = "\n\n".join(results["documents"])
                         
-                        assistant_placeholder.markdown(f"""
-                            <div class="chat-bubble assistant-bubble">
-                                <div class="chat-header" style="color: #a5b4fc; display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 1.1rem;">🎓</span> <span>RESEARCH ASSISTANT</span>
-                                </div>
-                                <div>{full_response}</div>
-                                {citation_html}
-                            </div>
-                        """, unsafe_allow_html=True)
-                    
-                    t1_llm = time.perf_counter()
-                    llm_time = t1_llm - t0_llm
-
-                    total_latency = query_emb_time + vector_search_time + reranker_time + llm_time
-
-                    st.session_state.query_metrics = {
-                        "query_embedding_time": query_emb_time * 1000,
-                        "vector_search_time": vector_search_time * 1000,
-                        "reranker_time": reranker_time * 1000,
-                        "llm_time": llm_time * 1000,
-                        "total_latency": total_latency * 1000
-                    }
-                    
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": full_response,
-                        "sources": retrieved_sources
-                    })
-                    
-                except Exception as e:
-                    st.error(f"Error generating answer: {str(e)}")
-
-            st.rerun()
-
-    # --- TAB 2: Document Summarizer ---
-    with tab_summary:
-        st.markdown('<h2 style="color: white;">📄 Document Executive Summarizer</h2>', unsafe_allow_html=True)
-        st.write("Select an uploaded paper to generate an automatic executive summary using the entire document text.")
-        
-        if not st.session_state.vector_db or not st.session_state.vector_db.collection or not st.session_state.uploaded_files:
-            st.info("Please upload and process documents in the sidebar to unlock document summarization.")
-        else:
-            selected_file = st.selectbox("Choose Document to Summarize", list(st.session_state.uploaded_files.keys()))
-            
-            if st.button("Generate Summary", type="primary"):
-                with st.spinner("Extracting content and writing summary..."):
-                    try:
-                        # Retrieve all chunks for this specific file from Vector DB
-                        results = st.session_state.vector_db.get_documents_by_metadata(
-                            where_clause={"source": selected_file}
-                        )
-                        
-                        if results and results["documents"]:
-                            full_doc_text = "\n\n".join(results["documents"])
-                            
-                            # Set up summarization prompt
-                            summarize_prompt = f"""You are a senior academic research summarizer. 
+                        # Set up summarization prompt
+                        summarize_prompt = f"""You are a senior academic research summarizer. 
 Provide a comprehensive, high-quality Executive Summary for the following research document.
 
 The summary must include:
@@ -873,39 +917,39 @@ The summary must include:
 Document Content:
 {full_doc_text[:120000]} # Trim to fit within context, though Gemini has massive limit.
 """
-                            client = genai.Client(api_key=api_key)
-                            response = client.models.generate_content(
-                                model=selected_model_id,
-                                contents=summarize_prompt
-                            )
-                            
-                            st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-                            st.markdown(f"### Summary for {selected_file}")
-                            st.write(response.text)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        else:
-                            st.error("No chunks found in database for the selected file.")
-                    except Exception as e:
-                        st.error(f"Failed to generate summary: {str(e)}")
-
-    # --- TAB 3: Insights & Q&A Generation ---
-    with tab_insights:
-        st.markdown('<h2 style="color: white;">📊 Key Insights & Discussion Questions</h2>', unsafe_allow_html=True)
-        st.write("Extract deep learning concepts, terminology, and generated study questions from all your ingested documents.")
-
-        if not st.session_state.vector_db or not st.session_state.vector_db.collection or not st.session_state.uploaded_files:
-            st.info("Upload and process documents in the sidebar to generate Insights.")
-        else:
-            if st.button("Extract Insights & Questions", type="primary"):
-                with st.spinner("Analyzing cross-document repository..."):
-                    try:
-                        # Get a sample of top/random chunks from the vector DB to represent the dataset
-                        results = st.session_state.vector_db.get_all_documents(limit=15)
+                        client = genai.Client(api_key=api_key)
+                        response = client.models.generate_content(
+                            model=selected_model_id,
+                            contents=summarize_prompt
+                        )
                         
-                        if results and results["documents"]:
-                            combined_text = "\n\n---\n\n".join(results["documents"])
-                            
-                            insight_prompt = f"""You are a research mentor. Analyse the provided text chunks and output:
+                        st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+                        st.markdown(f"### Summary for {selected_file}")
+                        st.write(response.text)
+                        st.markdown('</div>', unsafe_allow_html=True)
+                    else:
+                        st.error("No chunks found in database for the selected file.")
+                except Exception as e:
+                    st.error(f"Failed to generate summary: {str(e)}")
+
+# --- TAB 3: Insights & Q&A Generation ---
+with tab_insights:
+    st.markdown('<h2 style="color: white;">📊 Key Insights & Discussion Questions</h2>', unsafe_allow_html=True)
+    st.write("Extract deep learning concepts, terminology, and generated study questions from all your ingested documents.")
+
+    if not st.session_state.vector_db or not st.session_state.vector_db.collection or not st.session_state.uploaded_files:
+        st.info("Upload and process documents in the sidebar to generate Insights.")
+    else:
+        if st.button("Extract Insights & Questions", type="primary"):
+            with st.spinner("Analyzing cross-document repository..."):
+                try:
+                    # Get a sample of top/random chunks from the vector DB to represent the dataset
+                    results = st.session_state.vector_db.get_all_documents(limit=15)
+                    
+                    if results and results["documents"]:
+                        combined_text = "\n\n---\n\n".join(results["documents"])
+                        
+                        insight_prompt = f"""You are a research mentor. Analyse the provided text chunks and output:
 1. **Core Scientific Concepts & Definitions**: Identify the 3-5 most critical terms/theories and define them.
 2. **Key Takeaways & Core Claims**: Summarize the primary assertions of the text.
 3. **Advanced Discussion/Research Questions**: Formulate 3 thought-provoking questions suitable for further academic study.
@@ -913,23 +957,21 @@ Document Content:
 Context:
 {combined_text}
 """
-                            client = genai.Client(api_key=api_key)
-                            response = client.models.generate_content(
-                                model=selected_model_id,
-                                contents=insight_prompt
-                            )
-                            
-                            st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-                            st.markdown("### Generated Insights")
-                            st.write(response.text)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        else:
-                            st.error("Vector database is empty. No concepts can be extracted.")
-                    except Exception as e:
-                        st.error(f"Failed to extract insights: {str(e)}")
+                        client = genai.Client(api_key=api_key)
+                        response = client.models.generate_content(
+                            model=selected_model_id,
+                            contents=insight_prompt
+                        )
+                        
+                        st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+                        st.markdown("### Generated Insights")
+                        st.write(response.text)
+                        st.markdown('</div>', unsafe_allow_html=True)
+                    else:
+                        st.error("Vector database is empty. No concepts can be extracted.")
+                except Exception as e:
+                    st.error(f"Failed to extract insights: {str(e)}")
 
-with right_sidebar_col:
-    render_query_performance_sidebar()
 
 
 # Document manager was moved to the sidebar
