@@ -119,10 +119,10 @@ st.markdown("""
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 16px;
-        padding: 1.25rem;
+        padding: 1rem 1.25rem;
         margin: 0.5rem 0;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        height: 110px;
+        min-height: 110px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -345,6 +345,9 @@ if "uploaded_files" not in st.session_state:
 if "doc_embedding_time" not in st.session_state:
     st.session_state.doc_embedding_time = 0.0
 
+if "query_perf" not in st.session_state:
+    st.session_state.query_perf = None
+
 if "reranker" not in st.session_state:
     st.session_state.reranker = Reranker()
     st.session_state.reranker._load_model()
@@ -423,6 +426,7 @@ with st.sidebar:
             st.session_state.uploaded_files = {}
             st.session_state.chat_history = []
             st.session_state.doc_embedding_time = 0.0
+            st.session_state.query_perf = None
             st.success("Database cleared!")
             st.rerun()
 
@@ -480,7 +484,7 @@ st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_all
 st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
 # Top Metric Stats (Dynamic Row)
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 with col1:
     st.markdown(f"""
         <div class="metric-card">
@@ -521,6 +525,34 @@ with col5:
         <div class="metric-card">
             <div class="metric-title">Document Embedding Time</div>
             <div class="metric-val">{emb_time:.1f} sec</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col6:
+    perf = st.session_state.get("query_perf")
+    if perf and perf.get("total_ms") is not None:
+        emb_str = f"{perf['embedding_ms']} ms"
+        vec_str = f"{perf['vector_search_ms']} ms"
+        rerank_str = f"{perf['reranker_ms']} ms"
+        llm_str = f"{perf['llm_ms']} ms"
+        total_str = f"{perf['total_ms']} ms"
+    else:
+        emb_str = "-- ms"
+        vec_str = "-- ms"
+        rerank_str = "-- ms"
+        llm_str = "-- ms"
+        total_str = "-- ms"
+
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">⚡ Query Performance</div>
+            <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;"><span>Query Embedding Time</span><span style="font-weight: 600; color: #ffffff;">{emb_str}</span></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;"><span>Vector Search Time</span><span style="font-weight: 600; color: #ffffff;">{vec_str}</span></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;"><span>Reranker Time</span><span style="font-weight: 600; color: #ffffff;">{rerank_str}</span></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;"><span>LLM Time</span><span style="font-weight: 600; color: #ffffff;">{llm_str}</span></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 2px; margin-top: 1px;"><span>Total Query Latency</span><span style="font-weight: 700; color: #a5b4fc;">{total_str}</span></div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -597,22 +629,36 @@ with tab_chat:
         retrieved_sources = []
         context_str = ""
         
+        query_embedding_time_ms = 0.0
+        vector_search_time_ms = 0.0
+        reranker_time_ms = 0.0
+        llm_time_ms = 0.0
+
         if st.session_state.vector_db and st.session_state.vector_db.collection:
             # 1. Query Vector DB for top-K matching candidate chunks
+            t_vec_start = time.perf_counter()
             results = st.session_state.vector_db.query_similarity(user_query, k=top_k)
-            
+            t_vec_end = time.perf_counter()
+
+            total_vec_db_ms = (t_vec_end - t_vec_start) * 1000.0
+            query_embedding_time_ms = getattr(st.session_state.vector_db.emb_fn, "last_call_duration", 0.0) * 1000.0
+            vector_search_time_ms = max(0.0, total_vec_db_ms - query_embedding_time_ms)
+
             # Format retrieved context after Reranking
             if results and results["documents"] and results["documents"][0]:
                 candidate_docs = results["documents"][0]
                 candidate_metadatas = results["metadatas"][0]
                 
                 # 2. Apply CrossEncoder Reranking: Top-K candidates -> Top-P relevant chunks
+                t_rerank_start = time.perf_counter()
                 reranked_docs, reranked_metadatas, _ = st.session_state.reranker.rerank(
                     query=user_query,
                     documents=candidate_docs,
                     metadatas=candidate_metadatas,
                     top_p=top_p
                 )
+                t_rerank_end = time.perf_counter()
+                reranker_time_ms = (t_rerank_end - t_rerank_start) * 1000.0
                 
                 # De-duplicate citations for UI representation
                 seen_citations = set()
@@ -666,6 +712,7 @@ CONTEXT:
                         citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
                     citation_html += '</div>'
 
+                t_llm_start = time.perf_counter()
                 for chunk in response:
                     if chunk.text:
                         full_response += chunk.text
@@ -679,7 +726,23 @@ CONTEXT:
                             {citation_html}
                         </div>
                     """, unsafe_allow_html=True)
-                
+                t_llm_end = time.perf_counter()
+                llm_time_ms = (t_llm_end - t_llm_start) * 1000.0
+
+                emb_ms = round(query_embedding_time_ms)
+                vec_ms = round(vector_search_time_ms)
+                rerank_ms = round(reranker_time_ms)
+                llm_ms = round(llm_time_ms)
+                total_ms = emb_ms + vec_ms + rerank_ms + llm_ms
+
+                st.session_state.query_perf = {
+                    "embedding_ms": emb_ms,
+                    "vector_search_ms": vec_ms,
+                    "reranker_ms": rerank_ms,
+                    "llm_ms": llm_ms,
+                    "total_ms": total_ms
+                }
+
                 # Append finalized response to history
                 st.session_state.chat_history.append({
                     "role": "assistant",
