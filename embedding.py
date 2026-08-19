@@ -1,6 +1,11 @@
+import time
+import random
+import logging
 from chromadb.api.types import Documents, Embeddings, EmbeddingFunction
 from google import genai
 from concurrent.futures import ThreadPoolExecutor
+
+logger = logging.getLogger(__name__)
 
 class GeminiEmbeddingFunction(EmbeddingFunction):
     def __init__(self, api_key: str, model_name: str = "gemini-embedding-2"):
@@ -11,16 +16,30 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
     def __call__(self, input: Documents) -> Embeddings:
         try:
             def embed_one(text: str):
-                res = self.client.models.embed_content(
-                    model=self.model_name,
-                    contents=text
-                )
-                return res.embeddings[0].values
+                max_retries = 6
+                base_delay = 1.5
+                for attempt in range(max_retries):
+                    try:
+                        res = self.client.models.embed_content(
+                            model=self.model_name,
+                            contents=text
+                        )
+                        return res.embeddings[0].values
+                    except Exception as e:
+                        err_str = str(e).lower()
+                        if ("429" in err_str or "resource_exhausted" in err_str or "quota" in err_str or "rate limit" in err_str) and attempt < max_retries - 1:
+                            sleep_time = (base_delay * (2 ** attempt)) + random.uniform(0.1, 0.5)
+                            logger.warning(f"Gemini API rate limit hit (429). Retrying in {sleep_time:.2f}s... (Attempt {attempt+1}/{max_retries})")
+                            time.sleep(sleep_time)
+                        else:
+                            raise e
 
             if len(input) == 1:
                 return [embed_one(input[0])]
 
-            with ThreadPoolExecutor(max_workers=min(10, len(input))) as executor:
+            # Regulate worker concurrency (max 3 workers) to prevent exceeding Gemini Free Tier rate limits (100 RPM)
+            max_workers = min(3, len(input))
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 embeddings = list(executor.map(embed_one, input))
             return embeddings
         except Exception as e:
