@@ -323,104 +323,7 @@ button[kind="secondary"]:hover {
 button[data-testid="stChatInputSubmitButton"] {
     background-color: #10b981 !important;
     color: white !important;
-}      
-    /* Right Sidebar Custom Styling */
-    @media (min-width: 1200px) {
-        .block-container {
-            max-width: calc(100% - 330px) !important;
-            margin-left: 0 !important;
-            margin-right: 330px !important;
-            padding-right: 1.5rem !important;
-        }
-        .right-sidebar-fixed {
-            position: fixed;
-            top: 2rem;
-            right: 1.5rem;
-            width: 300px;
-            z-index: 100;
-            max-height: calc(100vh - 4rem);
-            overflow-y: auto;
-        }
-    }
-
-    @media (max-width: 1199px) {
-        .right-sidebar-fixed {
-            position: relative;
-            width: 100%;
-            margin-top: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-    }
-
-    .right-sidebar-panel {
-        background-color: #111420;
-        border: 1px solid #1e293b;
-        border-radius: 16px;
-        padding: 1.25rem 1.1rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    .right-sidebar-header {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .query-metric-card {
-        background: rgba(30, 41, 59, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 12px;
-        padding: 0.85rem 1rem;
-        margin-bottom: 0.75rem;
-        transition: all 0.2s ease;
-    }
-
-    .query-metric-card:hover {
-        border-color: rgba(99, 102, 241, 0.3);
-        background: rgba(30, 41, 59, 0.5);
-    }
-
-    .query-metric-label {
-        font-size: 0.82rem;
-        color: #94a3b8;
-        font-weight: 500;
-        margin-bottom: 0.3rem;
-        letter-spacing: 0.01rem;
-    }
-
-    .query-metric-val {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: #f8fafc;
-    }
-
-    .query-metric-divider {
-        border: 0;
-        height: 1px;
-        background: rgba(255, 255, 255, 0.12);
-        margin: 1.1rem 0;
-    }
-
-    .total-latency-card {
-        background: rgba(99, 102, 241, 0.12);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-    }
-
-    .total-latency-card:hover {
-        background: rgba(99, 102, 241, 0.2);
-        border-color: rgba(99, 102, 241, 0.5);
-    }
-
-    .total-latency-val {
-        color: #818cf8;
-        font-size: 1.5rem;
-    }
+}   
     </style>
 """, unsafe_allow_html=True)
 
@@ -445,70 +348,6 @@ if "doc_embedding_time" not in st.session_state:
 if "reranker" not in st.session_state:
     st.session_state.reranker = Reranker()
     st.session_state.reranker._load_model()
-
-if "query_metrics" not in st.session_state:
-    st.session_state.query_metrics = {
-        "query_embedding_time": None,
-        "vector_search_time": None,
-        "reranker_time": None,
-        "llm_time": None,
-        "total_latency": None
-    }
-
-
-def render_query_performance_sidebar():
-    metrics = st.session_state.get("query_metrics", {})
-    
-    def format_ms(val):
-        if val is None:
-            return "—"
-        ms_val = round(val, 1)
-        if ms_val.is_integer():
-            return f"{int(ms_val)} ms"
-        return f"{ms_val:.1f} ms"
-
-    emb_str = format_ms(metrics.get("query_embedding_time"))
-    search_str = format_ms(metrics.get("vector_search_time"))
-    rerank_str = format_ms(metrics.get("reranker_time"))
-    llm_str = format_ms(metrics.get("llm_time"))
-    total_str = format_ms(metrics.get("total_latency"))
-
-    st.markdown(f"""
-        <div class="right-sidebar-fixed">
-            <div class="right-sidebar-panel">
-                <div class="right-sidebar-header">⚡ Query Performance</div>
-                
-                <div class="query-metric-card">
-                    <div class="query-metric-label">Query Embedding Time</div>
-                    <div class="query-metric-val">{emb_str}</div>
-                </div>
-                
-                <div class="query-metric-card">
-                    <div class="query-metric-label">Vector Search Time</div>
-                    <div class="query-metric-val">{search_str}</div>
-                </div>
-                
-                <div class="query-metric-card">
-                    <div class="query-metric-label">Reranker Time</div>
-                    <div class="query-metric-val">{rerank_str}</div>
-                </div>
-                
-                <div class="query-metric-card">
-                    <div class="query-metric-label">LLM Time</div>
-                    <div class="query-metric-val">{llm_str}</div>
-                </div>
-                
-                <hr class="query-metric-divider">
-                
-                <div class="query-metric-card total-latency-card">
-                    <div class="query-metric-label">Total Query Latency</div>
-                    <div class="query-metric-val total-latency-val">{total_str}</div>
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-
 
 # --- Sidebar UI Configuration ---
 with st.sidebar:
@@ -578,13 +417,6 @@ with st.sidebar:
             st.session_state.uploaded_files = {}
             st.session_state.chat_history = []
             st.session_state.doc_embedding_time = 0.0
-            st.session_state.query_metrics = {
-                "query_embedding_time": None,
-                "vector_search_time": None,
-                "reranker_time": None,
-                "llm_time": None,
-                "total_latency": None
-            }
             st.success("Database cleared!")
             st.rerun()
 
@@ -641,9 +473,6 @@ if ingest_button and uploaded_files:
 st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
-# Render Fixed Right-Side Performance Sidebar
-render_query_performance_sidebar()
-
 # Top Metric Stats (Dynamic Row)
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
@@ -698,11 +527,13 @@ tab_chat, tab_summary, tab_insights = st.tabs([
 
 # --- TAB 1: Chat Interface ---
 with tab_chat:
-    if not st.session_state.vector_db or not st.session_state.vector_db.collection:
-        st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
-
-    if st.session_state.chat_history:
-        if st.button("Clear Chat", type="secondary"):
+    # Clear Chat and Warning header row
+    col_warn, col_clear = st.columns([0.88, 0.12])
+    with col_warn:
+        if not st.session_state.vector_db or not st.session_state.vector_db.collection:
+            st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
+    with col_clear:
+        if st.button("Clear Chat", type="secondary", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
 
@@ -756,46 +587,26 @@ with tab_chat:
 
         st.session_state.chat_history.append({"role": "user", "content": user_query})
 
-        # Process retrieval and answer generation with latency timing
+        # Process retrieval and answer generation
         retrieved_sources = []
         context_str = ""
         
-        query_emb_time = 0.0
-        vector_search_time = 0.0
-        reranker_time = 0.0
-        llm_time = 0.0
-        
         if st.session_state.vector_db and st.session_state.vector_db.collection:
-            # 1. Query Embedding Time
-            t0_emb = time.perf_counter()
-            query_embeddings = st.session_state.vector_db.emb_fn([user_query])
-            t1_emb = time.perf_counter()
-            query_emb_time = t1_emb - t0_emb
-
-            # 2. Vector Search Time (query ChromaDB with pre-computed query embedding)
-            t0_vec = time.perf_counter()
-            results = st.session_state.vector_db.collection.query(
-                query_embeddings=query_embeddings,
-                n_results=top_k
-            )
-            t1_vec = time.perf_counter()
-            vector_search_time = t1_vec - t0_vec
+            # 1. Query Vector DB for top-K matching candidate chunks
+            results = st.session_state.vector_db.query_similarity(user_query, k=top_k)
             
             # Format retrieved context after Reranking
             if results and results["documents"] and results["documents"][0]:
                 candidate_docs = results["documents"][0]
                 candidate_metadatas = results["metadatas"][0]
                 
-                # 3. Reranker Time
-                t0_rerank = time.perf_counter()
+                # 2. Apply CrossEncoder Reranking: Top-K candidates -> Top-P relevant chunks
                 reranked_docs, reranked_metadatas, _ = st.session_state.reranker.rerank(
                     query=user_query,
                     documents=candidate_docs,
                     metadatas=candidate_metadatas,
                     top_p=top_p
                 )
-                t1_rerank = time.perf_counter()
-                reranker_time = t1_rerank - t0_rerank
                 
                 # De-duplicate citations for UI representation
                 seen_citations = set()
@@ -826,18 +637,22 @@ CONTEXT:
 {context_str if context_str else "No documents uploaded. Assist with general knowledge."}
 """
 
-        # Generate Streaming Response & Measure LLM Time
+        # Generate Streaming Response
         with chat_container:
+            # We construct assistant bubble placeholder
             assistant_placeholder = st.empty()
+            
+            # Run stream
             full_response = ""
             try:
-                t0_llm = time.perf_counter()
+                # Instantiate Client
                 client = genai.Client(api_key=api_key)
                 response = client.models.generate_content_stream(
                     model=selected_model_id,
                     contents=f"{system_prompt}\n\nQuery: {user_query}"
                 )
                 
+                # Pre-compute citation HTML string once outside the streaming loop
                 citation_html = ""
                 if retrieved_sources:
                     citation_html += '<div class="citation-container">'
@@ -859,19 +674,7 @@ CONTEXT:
                         </div>
                     """, unsafe_allow_html=True)
                 
-                t1_llm = time.perf_counter()
-                llm_time = t1_llm - t0_llm
-
-                total_latency = query_emb_time + vector_search_time + reranker_time + llm_time
-
-                st.session_state.query_metrics = {
-                    "query_embedding_time": query_emb_time * 1000,
-                    "vector_search_time": vector_search_time * 1000,
-                    "reranker_time": reranker_time * 1000,
-                    "llm_time": llm_time * 1000,
-                    "total_latency": total_latency * 1000
-                }
-                
+                # Append finalized response to history
                 st.session_state.chat_history.append({
                     "role": "assistant",
                     "content": full_response,
@@ -971,7 +774,5 @@ Context:
                         st.error("Vector database is empty. No concepts can be extracted.")
                 except Exception as e:
                     st.error(f"Failed to extract insights: {str(e)}")
-
-
 
 # Document manager was moved to the sidebar
