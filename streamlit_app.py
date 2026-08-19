@@ -354,10 +354,16 @@ with st.sidebar:
     st.markdown('<div style="text-align: center; margin-top: 0px; margin-bottom: 0.2rem; line-height: 1.0;"><span style="font-size: 3rem;">🎓</span></div>', unsafe_allow_html=True)
     st.markdown('<h2 style="text-align: center; color: white; margin-top: 0px; margin-bottom: 0.4rem; font-size: 1.5rem; font-weight: 700;">Configuration</h2>', unsafe_allow_html=True)
     
-    # 1. Securely retrieve API Key from environment variables (local .env or Streamlit Secrets)
+    # 1. Securely retrieve API Key from environment variables (local .env) or Streamlit Secrets (.streamlit/secrets.toml)
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        st.sidebar.error("🔑 Gemini API Key not found! Please configure GEMINI_API_KEY in your local .env file or Streamlit Cloud Secrets.")
+        try:
+            api_key = st.secrets.get("GEMINI_API_KEY") or (st.secrets.get("gemini", {}).get("api_key") if isinstance(st.secrets.get("gemini"), dict) else None)
+        except Exception:
+            api_key = None
+
+    if not api_key:
+        st.sidebar.error("🔑 Gemini API Key not found! Please configure GEMINI_API_KEY in your local .env file or Streamlit Secrets (.streamlit/secrets.toml).")
     
     # 2. Model Selection
     model_options = {
