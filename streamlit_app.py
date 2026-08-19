@@ -37,6 +37,22 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
+    /* Custom Webkit Scrollbars */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0d0f14;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #334155;
+    }
+
     /* Main Background & Padding */
     .stApp {
         background-color: #0d0f14;
@@ -50,37 +66,37 @@ st.markdown("""
     
     /* Reduce top padding to extend UI to the top portions */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 2rem !important;
+        max-width: 1400px !important;
     }
 
     /* Gradient Header Text */
     .gradient-title {
-        background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #3b82f6 100%);
+        background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 2.8rem;
+        font-size: 2.6rem;
         font-weight: 800;
-        letter-spacing: -0.05rem;
+        letter-spacing: -0.04rem;
         margin-bottom: 0.2rem;
         text-align: center;
     }
 
     .subtitle {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: #94a3b8;
         font-weight: 400;
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
         text-align: center;
     }
 
     /* Sidebar Custom Styling */
     section[data-testid="stSidebar"] {
-        background-color: #111420 !important;
-        border-right: 1px solid #1e293b;
+        background-color: #0f121d !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
     }
 
-    /* Move sidebar contents to the absolute top of the sidebar container with exactly 1px space */
     [data-testid="stSidebar"] {
         padding-top: 1px !important;
     }
@@ -92,13 +108,6 @@ st.markdown("""
         margin-top: 1px !important;
     }
 
-    /* Target the very first element block containing the cap emoji to force 1px spacing */
-    section[data-testid="stSidebar"] div.element-container:first-of-type,
-    section[data-testid="stSidebar"] div.element-container:first-of-type > div {
-        margin-top: 1px !important;
-        padding-top: 1px !important;
-    }
-
     /* Hide empty Streamlit sidebar navigation spacing */
     div[data-testid="stSidebarNav"] {
         display: none !important;
@@ -107,9 +116,35 @@ st.markdown("""
         padding: 0px !important;
     }
 
-    /* Reduce vertical widget spacing inside the sidebar */
+    /* Vertical widget spacing inside sidebar */
     section[data-testid="stSidebar"] div.stVerticalBlock {
-        gap: 0.4rem !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Sidebar Section Headers */
+    .sidebar-section-header {
+        color: #f1f5f9;
+        font-size: 0.92rem;
+        font-weight: 700;
+        margin-top: 0.9rem;
+        margin-bottom: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.01rem;
+    }
+
+    /* Ingested Document List Items */
+    .doc-item-card {
+        background: rgba(30, 41, 59, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        transition: border-color 0.2s ease;
+    }
+    .doc-item-card:hover {
+        border-color: rgba(99, 102, 241, 0.3);
     }
 
     /* Glassmorphism Metric Cards */
@@ -118,74 +153,100 @@ st.markdown("""
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 1rem 1.25rem;
-        margin: 0.5rem 0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 110px;
+        border-radius: 14px;
+        padding: 0.9rem 1.1rem;
+        margin: 0.3rem 0;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 125px;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
     
     .metric-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
+        border-color: rgba(99, 102, 241, 0.35);
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 8px 20px -6px rgba(99, 102, 241, 0.25);
     }
 
     .metric-title {
-        font-size: 0.85rem;
+        font-size: 0.78rem;
+        font-weight: 600;
         color: #94a3b8;
         text-transform: uppercase;
-        letter-spacing: 0.05rem;
-        margin-bottom: 0.25rem;
+        letter-spacing: 0.04rem;
+        margin-bottom: 0.3rem;
     }
 
     .metric-val {
-        font-size: 1.8rem;
+        font-size: 1.65rem;
         font-weight: 700;
         color: #ffffff;
+        letter-spacing: -0.02rem;
+    }
+
+    /* Output Content Cards for Summarizer & Insights */
+    .output-card {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-top: 1.25rem;
+        color: #e2e8f0;
+        line-height: 1.6;
+    }
+
+    .output-card-header {
+        color: #a5b4fc;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 0.5rem;
     }
 
     /* Custom Chat Styling */
     .chat-bubble {
-        padding: 1.2rem;
-        border-radius: 18px;
+        padding: 1.1rem 1.3rem;
+        border-radius: 16px;
         margin-bottom: 1rem;
         max-width: 85%;
-        line-height: 1.5;
-        font-size: 0.95rem;
+        line-height: 1.55;
+        font-size: 0.94rem;
         animation: fadeIn 0.3s ease-in-out;
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(8px); }
+        from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     .user-bubble {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        color: white;
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: #ffffff;
         margin-left: auto;
-        border-bottom-right-radius: 4px;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        border-bottom-right-radius: 3px;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
     }
 
     .assistant-bubble {
-        background: rgba(30, 41, 59, 0.55);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         color: #f1f5f9;
         margin-right: auto;
-        border-bottom-left-radius: 4px;
+        border-bottom-left-radius: 3px;
     }
 
     .chat-header {
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.03rem;
+        letter-spacing: 0.04rem;
         margin-bottom: 0.4rem;
         color: #94a3b8;
     }
@@ -200,130 +261,123 @@ st.markdown("""
     .citation-tag {
         display: inline-flex;
         align-items: center;
-        background: rgba(99, 102, 241, 0.15);
+        background: rgba(99, 102, 241, 0.12);
         color: #818cf8;
         border: 1px solid rgba(99, 102, 241, 0.25);
-        border-radius: 6px;
-        padding: 0.2rem 0.6rem;
-        font-size: 0.75rem;
+        border-radius: 20px;
+        padding: 0.25rem 0.7rem;
+        font-size: 0.72rem;
         font-weight: 600;
-        margin-right: 0.5rem;
+        margin-right: 0.4rem;
         margin-top: 0.25rem;
+        transition: all 0.2s ease;
+    }
+    .citation-tag:hover {
+        background: rgba(99, 102, 241, 0.22);
+        border-color: rgba(99, 102, 241, 0.4);
     }
 
-    /* ===========================
-   CENTER TABS - STREAMLIT 1.58
-=========================== */
+    /* Center Tabs */
+    .stTabs {
+        display: flex;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
 
-.stTabs{
-    display:flex;
-    justify-content:center;
-}
+    .stTabs > div {
+        width: 100%;
+    }
 
-.stTabs > div{
-    width:100%;
-}
+    .stTabs [role="tablist"] {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: fit-content !important;
+        margin: 0 auto !important;
+        gap: 10px !important;
+    }
 
-.stTabs [role="tablist"]{
-    display:flex !important;
-    justify-content:center !important;
-    align-items:center !important;
-    width:fit-content !important;
-    margin:0 auto !important;
-    gap:12px !important;
-}
+    .stTabs [role="tab"] {
+        height: 44px;
+        padding: 0 22px;
+        border-radius: 10px 10px 0 0;
+        background: rgba(30, 41, 59, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: #94a3b8;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
 
-.stTabs [role="tab"]{
-    height:48px;
-    padding:0 22px;
-    border-radius:10px 10px 0 0;
-    background:rgba(30,41,59,.20);
-    border:1px solid rgba(255,255,255,.05);
-    color:#94a3b8;
-    transition:.25s;
-}
+    .stTabs [aria-selected="true"] {
+        background: rgba(99, 102, 241, 0.16) !important;
+        border-color: rgba(99, 102, 241, 0.35) !important;
+        color: #c7d2fe !important;
+        font-weight: 600;
+    }
 
-.stTabs [aria-selected="true"]{
-    background:rgba(99,102,241,.15)!important;
-    border-color:rgba(99,102,241,.35)!important;
-    color:#a5b4fc!important;
-    font-weight:600;
-}
-    /* Green Send Button for st.chat_input */
+    /* Chat Input Styling */
+    div[data-testid="stChatInput"] {
+        background: #000000 !important;
+        border: 1px solid #3d3d3d !important;
+        border-radius: 14px !important;
+        padding: 8px !important;
+        transition: border-color 0.2s ease;
+    }
+
+    div[data-testid="stChatInput"] > div {
+        background: #000000 !important;
+    }
+
+    div[data-testid="stChatInput"] textarea {
+        background: #000000 !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+        caret-color: #ffffff !important;
+    }
+
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #9ca3af !important;
+    }
+
+    div[data-testid="stChatInput"]:focus-within {
+        border: 1px solid #6366f1 !important;
+    }
+
     button[data-testid="stChatInputSubmitButton"] {
         background-color: #10b981 !important;
         color: white !important;
+        border-radius: 10px !important;
     }
-    /* ===========================
-   CHAT INPUT - BLACK THEME
-=========================== */
 
-/* Outer chat box */
-div[data-testid="stChatInput"]{
-    background:#000000 !important;
-    border:1px solid #3d3d3d !important;
-    border-radius:14px !important;
-    padding:8px !important;
-}
+    /* Button Styling */
+    button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25) !important;
+        transition: all 0.2s ease !important;
+    }
+    button[kind="primary"]:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4) !important;
+    }
 
-/* Remove Streamlit white wrapper */
-div[data-testid="stChatInput"] > div{
-    background:#000000 !important;
-}
+    button[kind="secondary"] {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: 1px solid #404040 !important;
+        border-radius: 10px !important;
+        transition: all 0.2s ease !important;
+    }
 
-/* Text input */
-div[data-testid="stChatInput"] textarea{
-    background:#000000 !important;
-    color:#ffffff !important;
-    border:none !important;
-    box-shadow:none !important;
-    caret-color:#ffffff !important;
-}
-
-/* Placeholder */
-div[data-testid="stChatInput"] textarea::placeholder{
-    color:#9ca3af !important;
-}
-
-/* Focus */
-div[data-testid="stChatInput"]:focus-within{
-    border:1px solid #6366f1 !important;
-}
-
-/* Send button */
-button[data-testid="stChatInputSubmitButton"]{
-    background:#10b981 !important;
-    color:white !important;
-    border-radius:10px !important;
-}
-
-/* Clear Chat button */
-button[kind="secondary"]{
-    background:#000000 !important;
-    color:#ffffff !important;
-    border:1px solid #3d3d3d !important;
-}
-
-button[kind="secondary"]:hover{
-    background:#1a1a1a !important;
-}
-/* Clear Chat button */
-button[kind="secondary"] {
-    background-color: #000000 !important;
-    color: #ffffff !important;
-    border: 1px solid #404040 !important;
-    border-radius: 10px !important;
-}
-
-button[kind="secondary"]:hover {
-    background-color: #1a1a1a !important;
-    border-color: #666666 !important;
-}
-
-button[data-testid="stChatInputSubmitButton"] {
-    background-color: #10b981 !important;
-    color: white !important;
-}   
+    button[kind="secondary"]:hover {
+        background-color: #1a1a1a !important;
+        border-color: #666666 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -381,7 +435,7 @@ with st.sidebar:
         format_func=lambda x: model_options[x]
     )
 
-    st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Document Ingestion Parameters</h3>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-header">⚙️ Document Ingestion Parameters</div>', unsafe_allow_html=True)
     
     chunk_size = st.slider("Chunk Size (characters)", min_value=300, max_value=2000, value=800, step=100)
     chunk_overlap = st.slider("Chunk Overlap (characters)", min_value=0, max_value=max(0, chunk_size - 50), value=min(150, max(0, chunk_size - 50)), step=25)
@@ -389,14 +443,14 @@ with st.sidebar:
     if chunk_overlap < 0 or chunk_overlap >= chunk_size:
         st.sidebar.error("⚠️ Invalid Chunk Overlap: Must satisfy 0 <= Chunk Overlap < Chunk Size.")
     
-    st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Retrieval & Reranking Parameters</h3>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-header">🔍 Retrieval & Reranking Parameters</div>', unsafe_allow_html=True)
     top_k = st.slider("Vector Candidates (Top-K)", min_value=5, max_value=25, value=10, step=1)
     top_p = st.slider("Reranked Results (Top-P)", min_value=1, max_value=top_k, value=min(3, top_k), step=1)
     
-    st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.08); margin: 0.8rem 0;'>", unsafe_allow_html=True)
     
     # Document Upload Section
-    st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Upload Research Papers</h3>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-header">📄 Upload Research Papers</div>', unsafe_allow_html=True)
     uploaded_files = st.file_uploader(
         "Upload files (.pdf, .txt, .md, .docx)",
         type=["pdf", "txt", "md", "docx"],
@@ -408,15 +462,21 @@ with st.sidebar:
 
     # Ingested documents list below the button
     if st.session_state.uploaded_files:
-        st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
-        st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Ingested Documents</h3>', unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.08); margin: 0.8rem 0;'>", unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section-header">📚 Ingested Documents</div>', unsafe_allow_html=True)
         
         for filename, info in st.session_state.uploaded_files.items():
             size_mb = info["size_bytes"] / (1024 * 1024)
             st.markdown(f"""
-                <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
-                    <strong style="color: #a5b4fc; font-size: 0.9rem;">📄 {filename}</strong><br>
-                    <span style="color: #94a3b8; font-size: 0.75rem;">Size: {size_mb:.2f} MB | Chunks: {info["chunk_count"]}</span>
+                <div class="doc-item-card">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.9rem;">📄</span>
+                        <strong style="color: #c7d2fe; font-size: 0.85rem; word-break: break-all;">{filename}</strong>
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.72rem; margin-top: 4px; display: flex; justify-content: space-between;">
+                        <span>Size: {size_mb:.2f} MB</span>
+                        <span>Chunks: {info["chunk_count"]}</span>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -489,7 +549,7 @@ with col1:
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-title">Gemini Model</div>
-            <div class="metric-val" style="font-size: 1.1rem; color: #a5b4fc; margin-top: 5px;">{selected_model_id}</div>
+            <div class="metric-val" style="font-size: 0.92rem; color: #a5b4fc; margin-top: 4px; line-height: 1.3;">{selected_model_id}</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -795,8 +855,10 @@ Document Content:
                             contents=summarize_prompt
                         )
                         
-                        st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-                        st.markdown(f"### Summary for {selected_file}")
+                        st.markdown(f"""
+                            <div class="output-card">
+                                <div class="output-card-header">📄 Executive Summary for {selected_file}</div>
+                        """, unsafe_allow_html=True)
                         st.write(response.text)
                         st.markdown('</div>', unsafe_allow_html=True)
                     else:
@@ -835,8 +897,10 @@ Context:
                             contents=insight_prompt
                         )
                         
-                        st.markdown('<div class="metric-card" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-                        st.markdown("### Generated Insights")
+                        st.markdown("""
+                            <div class="output-card">
+                                <div class="output-card-header">📊 Repository Key Insights & Discussion Questions</div>
+                        """, unsafe_allow_html=True)
                         st.write(response.text)
                         st.markdown('</div>', unsafe_allow_html=True)
                     else:

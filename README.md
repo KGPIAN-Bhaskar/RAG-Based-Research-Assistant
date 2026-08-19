@@ -1,108 +1,191 @@
-# 🎓 RAG-Based Research Assistant
+# Enterprise RAG Systems — Vector Search + Reranking
 
-A premium, browser-hosted **Retrieval-Augmented Generation (RAG)** Research Assistant powered by **Google Gemini API** (`google-genai`), **ChromaDB**, **BGE CrossEncoder Reranker**, and **Streamlit**.
+A high-performance, client-side **Retrieval-Augmented Generation (RAG)** system built with **Streamlit**, **Google Gemini API** (`gemini-embedding-2`, `gemini-2.0-flash`), **ChromaDB**, and a **BAAI CrossEncoder Reranker**. 
 
-Designed specifically for researchers, students, and academics to upload research papers (PDF, DOCX, TXT, MD), perform deep vector retrieval + reranking, and ask complex questions with verified document & page-level citations.
+Designed for researchers and academic workflows, this application ingests documents (PDF, DOCX, TXT, MD), performs dense vector similarity retrieval, re-scores candidate chunks with deep cross-encoding, and streams grounded answers with verified document and page-level citations.
 
 ---
 
-## 🏗️ End-to-End RAG Pipeline Architecture
+## 🔗 Live Demo
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ragbybhaskar.streamlit.app/)
+
+**Live URL:** [https://ragbybhaskar.streamlit.app/](https://ragbybhaskar.streamlit.app/)
+
+---
+
+## 📸 Application Screenshots
+
+### 1. Dashboard Overview & Initial Metric Cards
+![Enterprise RAG Systems Dashboard Overview](assets/dashboard_overview.png)
+
+### 2. Sidebar Configuration, Chunking Parameters & Ingestion Metadata
+![Sidebar Configuration & Ingested Document Metadata](assets/ingestion_configuration.png)
+
+### 3. Grounded Q&A Chat, Document Citations & Real-Time Query Performance
+![Research Chat Q&A and Query Performance Metrics](assets/chat_and_performance.png)
+
+---
+
+## 🏗️ Architecture Pipeline
+
+The following diagram details the complete current two-stage retrieval and generation architecture:
+
+```mermaid
+flowchart TD
+    subgraph Ingestion["Document Ingestion Pipeline"]
+        A[Documents .pdf, .docx, .txt, .md] --> B[Document Parsing & Text Extraction]
+        B --> C[SimpleTextSplitter Chunking]
+        C --> D[Gemini Embedding 2 API]
+        D --> E[ChromaDB Ephemeral Store]
+    end
+
+    subgraph Query["Retrieval & Generation Pipeline"]
+        F[User Question] --> G[Query Embedding]
+        G --> H[ChromaDB Vector Similarity Search]
+        H -->|Top-10 Candidate Chunks| I[CrossEncoder Reranker BAAI/bge-reranker-base]
+        I -->|Top-3 Relevant Chunks| J[Prompt Construction]
+        J --> K[Gemini LLM Generation]
+        K --> L[Final Grounded Answer + Page Citations]
+    end
+```
+
+---
+
+## 💡 System Overview
+
+The system addresses common limitations in naive LLM question answering (hallucinations, lack of domain context, lack of source citations) by embedding research papers into a searchable vector database and grounding LLM responses in retrieved text.
+
+1. **Document Ingestion & Chunking**: Uploaded papers are parsed, split into overlapping text chunks, embedded using `gemini-embedding-2`, and indexed in ChromaDB.
+2. **First-Stage Vector Search**: User queries are embedded and compared against stored vectors in ChromaDB to instantly select the **Top-10 candidate chunks**.
+3. **Second-Stage Cross-Encoder Reranking**: Candidate chunks are re-evaluated alongside the query by `BAAI/bge-reranker-base` using joint self-attention to filter out false positives and select the **Top-3 most relevant chunks**.
+4. **Grounded Answer Generation**: The Top-3 reranked chunks are passed into the system prompt for Gemini LLM (`gemini-2.0-flash`, `gemini-3.1-flash-lite`, etc.) to stream an academically structured answer with inline page citations.
+
+---
+
+## 🔍 Two-Stage Retrieval Pipeline
 
 ```
-                                  USER QUERY
-                                      │
-                                      ▼
-                       ┌─────────────────────────────┐
-                       │    Query Vector Embedding   │
-                       │     (gemini-embedding-2)    │
-                       └──────────────┬──────────────┘
-                                      │
-                                      ▼
-                       ┌─────────────────────────────┐
-                       │   ChromaDB Vector Search    │
-                       │    Retrieves Top-K Chunks   │
-                       └──────────────┬──────────────┘
-                                      │
-                                      ▼
-                       ┌─────────────────────────────┐
-                       │   CrossEncoder Reranker     │
-                       │  (BAAI/bge-reranker-base)   │
-                       │   Selects Top-P Candidates  │
-                       └──────────────┬──────────────┘
-                                      │
-                                      ▼
-                       ┌─────────────────────────────┐
-                       │    Grounded Context & Prompt│
-                       └──────────────┬──────────────┘
-                                      │
-                                      ▼
-                       ┌─────────────────────────────┐
-                       │     Gemini LLM Generation   │
-                       │   (gemini-2.0-flash / etc.) │
-                       └──────────────┬──────────────┘
-                                      │
-                                      ▼
-                      STREAMING RESPONSE WITH CITATIONS
+User Query ──► Vector Search (Top-10) ──► CrossEncoder Reranker (Top-3) ──► Gemini LLM ──► Grounded Answer
 ```
 
----
+### First-Stage: Vector Similarity Search
+- **Technology**: ChromaDB (Ephemeral Client) & `gemini-embedding-2`
+- **Function**: Performs fast approximate nearest neighbor search across dense embeddings.
+- **Output**: Retrieves **Top-10 candidate chunks** (`Top-K = 10`).
 
-## 🤖 Models, Components & Where They Are Used
-
-| Component / Model | Technology / Model Name | File Location | Purpose & Functionality |
-| :--- | :--- | :--- | :--- |
-| **Document Splitter** | `SimpleTextSplitter` | [`app.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/app.py) | Recursively splits uploaded documents into text chunks based on user-configured **Chunk Size** and **Chunk Overlap**. Prepends trailing overlap text from preceding chunks to preserve context boundaries. |
-| **Embedding Model** | `gemini-embedding-2` | [`embedding.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/embedding.py) | Custom ChromaDB `GeminiEmbeddingFunction`. Converts text chunks and queries into 3072-dimensional dense vector embeddings via Google GenAI API. Features **exponential backoff retry** for 429 rate limits (100 RPM Gemini Free Tier limit). |
-| **Vector Database** | `ChromaDB` (Ephemeral Client) | [`vector_db.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/vector_db.py) | In-memory vector database manager (`VectorDBManager`). Manages collection creation, indexes chunk vectors with metadata (`source`, `page`, `chunk_index`), and executes similarity search to retrieve **Top-K vector candidates**. |
-| **Reranker Model** | `BAAI/bge-reranker-base` (CrossEncoder) | [`reranker.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/reranker.py) | Deep CrossEncoder reranker. Evaluates query ↔ candidate text pairs using deep transformer self-attention to re-score vector candidates and select the **Top-P most relevant chunks**. Features startup pre-warming, candidate deduplication, and PyTorch `inference_mode`. |
-| **LLM Reasoning & Generation** | `gemini-2.0-flash`<br>*(also supports `gemini-3.1-flash-lite`, `gemini-1.5-pro`)* | [`streamlit_app.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/streamlit_app.py) | Generates streaming answers grounded strictly on the reranked context. Outputs inline citations and renders document tags with page numbers. |
-| **Frontend UI** | `Streamlit` | [`streamlit_app.py`](file:///c:/Users/manda/Desktop/Hybrid%20RAG%20Based%20Research%20Assistant/streamlit_app.py) | Glassmorphism UI with custom Inter typography, dark mode theme, live metric statistics, tabbed navigation, and interactive document ingestion controls. |
+### Second-Stage: Cross-Encoder Reranking
+- **Technology**: `BAAI/bge-reranker-base` (PyTorch CrossEncoder)
+- **Function**: Computes deep query-document cross-attention to score true semantic alignment.
+- **Output**: Filters duplicate candidates and extracts **Top-3 relevant chunks** (`Top-P = 3`).
 
 ---
 
-## 🚀 Step-by-Step Pipeline Flow
+## ⚙️ Current System Configuration
 
-1. **Document Ingestion & Parsing**:
-   - User uploads papers (`.pdf`, `.docx`, `.txt`, `.md`).
-   - `parse_document()` extracts text and page numbers.
-   - `SimpleTextSplitter` divides text using user-defined **Chunk Size** (e.g., 800 chars) and **Chunk Overlap** (e.g., 150 chars).
-   - Generated chunks are embedded using `GeminiEmbeddingFunction` (`gemini-embedding-2`) and stored in ChromaDB along with page metadata.
-
-2. **Retrieval & Reranking**:
-   - When a user submits a question, `VectorDBManager` queries ChromaDB for the **Top-K** closest vector candidates (default `K=10`).
-   - The candidate chunks are passed to the `Reranker` (`BAAI/bge-reranker-base`).
-   - CrossEncoder scores query-chunk relevance, filters out duplicate chunks, and selects the **Top-P** highest-scoring chunks (default `P=3`).
-
-3. **Grounded Generation & Citation**:
-   - The Top-P reranked chunks are formatted into an academic research prompt.
-   - Gemini LLM generates a real-time streaming answer with precise `[DocumentName, Page X]` source citations.
+| Parameter | Configuration / Value | Description |
+| :--- | :--- | :--- |
+| **Embedding Model** | `gemini-embedding-2` | Google GenAI 3072-dim dense embeddings |
+| **Vector Store** | ChromaDB (Ephemeral) | In-memory vector index with metadata tagging |
+| **Vector Candidates (Top-K)** | `10` (Configurable 5–25) | First-stage candidate retrieval limit |
+| **Reranker Model** | `BAAI/bge-reranker-base` | Deep CrossEncoder relevance scoring model |
+| **Reranked Candidates (Top-P)** | `3` (Configurable 1–K) | Second-stage final context selection limit |
+| **Default Chunk Size** | `800` characters | Text chunk boundary length |
+| **Default Chunk Overlap** | `150` characters | Preserved context overlap between adjacent chunks |
+| **LLM Model Options** | `gemini-2.0-flash` (Default)<br>`gemini-3.1-flash-lite`<br>`gemini-1.5-flash`<br>`gemini-1.5-pro` | Gemini models supported for response generation |
 
 ---
 
-## 📁 Repository Structure
+## 🛠️ Technology Stack
+
+| Component | Technology | Role & Functionality |
+| :--- | :--- | :--- |
+| **Language** | Python 3.10+ | Core application runtime and RAG logic |
+| **Frontend Framework** | Streamlit | Glassmorphism dashboard UI & interactive controls |
+| **Embedding API** | `gemini-embedding-2` | Dense vector embedding generation for chunks & queries |
+| **Vector Database** | ChromaDB | In-memory vector database and similarity search |
+| **Reranker** | `sentence-transformers`<br>(`BAAI/bge-reranker-base`) | Second-stage cross-encoder relevance scoring |
+| **LLM Generation** | Google GenAI SDK (`google-genai`) | Streaming response generation with grounded context |
+| **Document Parsers** | `pdfplumber`, `pypdf`, `python-docx` | Extraction of text and page metadata from files |
+
+---
+
+## ⚡ Query Performance Instrumentation
+
+The application embeds a real-time **⚡ Query Performance** monitoring card on the dashboard that tracks exact execution latencies for each stage using `time.perf_counter()`:
+
+```text
+⚡ Query Performance
+
+Query Embedding Time     XX ms
+Vector Search Time       XX ms
+Reranker Time            XX ms
+LLM Time                 XX ms
+Total Query Latency      XX ms
+```
+
+**Latency Equation**:
+$$\text{Total Query Latency} = \text{Query Embedding Time} + \text{Vector Search Time} + \text{Reranker Time} + \text{LLM Time}$$
+
+---
+
+## ✨ Key Features
+
+- 📄 **Multi-Format Document Ingestion**: Upload research papers in `.pdf`, `.docx`, `.txt`, and `.md` formats.
+- ✂️ **Configurable Chunking**: Real-time Streamlit sliders to adjust Chunk Size and Chunk Overlap.
+- 🧠 **High-Dimensional Embeddings**: Dense 3072-dim representations via `gemini-embedding-2` with automatic 429 rate limit backoff.
+- 🔎 **Fast Vector Similarity Search**: ChromaDB first-stage retrieval for Top-K candidate chunks.
+- 🔄 **Cross-Encoder Reranking**: Re-scores Top-K candidates using `BAAI/bge-reranker-base` to eliminate irrelevant context.
+- 🎓 **Grounded Answers with Page Citations**: Streaming responses with verified `📄 [Document, Page X]` source tags.
+- ⚡ **Query Performance Metrics**: Live tracking of query embedding time, vector search time, reranker time, LLM generation time, and total query latency.
+- 📊 **Repository Dashboards**: Live cards for Ingested Documents, Total Chunks, Database Size, and Document Embedding Time.
+- 📄 **Executive Document Summarizer**: Auto-generates structured academic summaries for any uploaded paper.
+- 📊 **Key Insights & Q&A Generator**: Extracts core concepts, claims, and discussion questions across the repository.
+
+---
+
+## 🤔 Why Reranking?
+
+Vector search relies on bi-encoder embeddings (where query and document are embedded independently), allowing fast nearest-neighbor lookups across millions of vectors. However, bi-encoders can misrank candidate chunks due to missing fine-grained keyword interactions.
+
+The CrossEncoder reranker processes the `Query ↔ Document` pair simultaneously through transformer attention layers, enabling deep semantic scoring.
+
+```
+Vector Search (Fast, Candidate Search) ──► Top-10 ──► Reranker (Deep, Fine-Grained) ──► Top-3 ──► LLM
+```
+
+### Trade-off Analysis
+- ✅ **Pros**: Higher precision context selection, reduced LLM hallucinations, smaller prompt context size.
+- ⚠️ **Trade-offs**: Adds minor inference latency (~300–800ms) during the reranking step.
+
+---
+
+## 📂 Repository Structure
 
 ```
 .
-├── app.py              # Document extraction (PDF/DOCX/TXT) & SimpleTextSplitter chunking
-├── embedding.py        # GeminiEmbeddingFunction with retry & backoff for 429 rate limits
-├── vector_db.py        # VectorDBManager encapsulating ChromaDB storage & similarity search
-├── reranker.py         # CrossEncoder Reranker with pre-warming & batch inference
-├── streamlit_app.py    # Main Streamlit web application & chat interface
-├── requirements.txt    # Required Python dependencies
-└── README.md           # Documentation
+├── assets/             # Application UI screenshots for documentation
+│   ├── dashboard_overview.png
+│   ├── ingestion_configuration.png
+│   └── chat_and_performance.png
+├── app.py              # Document extraction (PDF/DOCX/TXT/MD) & SimpleTextSplitter chunking
+├── embedding.py        # GeminiEmbeddingFunction with retry & backoff for ChromaDB
+├── vector_db.py        # VectorDBManager wrapping ChromaDB storage & similarity search
+├── reranker.py         # CrossEncoder Reranker (BAAI/bge-reranker-base) for relevance scoring
+├── streamlit_app.py    # Main Streamlit web application, UI dashboard & chat interface
+├── requirements.txt    # Python dependencies
+└── README.md           # Project documentation
 ```
 
 ---
 
-## 💻 Local Setup & Installation
+## 💻 Installation & Local Setup
 
 ### 1. Prerequisites
-- Python 3.10+
+- Python 3.10 or higher
 - Google Gemini API Key ([Get API Key](https://aistudio.google.com/))
 
-### 2. Installation
-
-Clone the repository and install dependencies:
+### 2. Clone & Install Dependencies
 
 ```bash
 git clone https://github.com/KGPIAN-Bhaskar/RAG-Based-Research-Assistant.git
@@ -110,29 +193,39 @@ cd RAG-Based-Research-Assistant
 pip install -r requirements.txt
 ```
 
-### 3. Environment Configuration
+### 3. Environment Setup
 
-Create a `.env` file in the root directory and add your Gemini API Key:
+Create a `.env` file in the root directory:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### 4. Run Application
+*Alternatively, configure `GEMINI_API_KEY` in `.streamlit/secrets.toml`.*
 
-Launch the Streamlit dashboard:
+### 4. Run the Application
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-The application will automatically open in your browser at `http://localhost:8501`.
+Open `http://localhost:8501` in your browser.
 
 ---
 
-## ⚡ Performance & Optimization Highlights
+## ⚠️ Limitations
 
-- **Pre-warmed Model Weights**: CrossEncoder weights are pre-loaded into memory during session startup to eliminate first-query cold-start latency.
-- **Candidate Deduplication**: Identical chunks are deduplicated before reranking, saving ~25-35% computation time.
-- **Automatic 429 Rate Limit Handling**: Automatic exponential backoff handles Gemini Free Tier API quotas (100 RPM) seamlessly without failing document ingestion.
-- **Optimized UI Stream Rendering**: Pre-computed citation tags prevent redundant HTML re-rendering during response streaming.
+- **Rate Limits**: Heavy document ingestion relies on the Gemini API free/paid quotas. The embedding wrapper automatically retries on `429` rate limits.
+- **Hardware Acceleration**: The CrossEncoder reranker runs on CPU by default if GPU is unavailable, adding slightly higher reranker latency (~400–900ms).
+- **Exact Keyword Matching**: Pure semantic vector search may occasionally miss rare acronyms or exact serial numbers without lexical search.
+
+---
+
+## 🔮 Future Improvements (Next Steps)
+
+1. **Hybrid Retrieval (Lexical + Vector)**:
+   - Combine **BM25 Keyword Search** with **Vector Similarity Search** using Reciprocal Rank Fusion (RRF) prior to reranking.
+2. **Persistent Vector Database**:
+   - Migrate ChromaDB from an ephemeral in-memory client to disk or cloud persistence (Chroma Server / Pinecone / Qdrant).
+3. **Multi-Modal Document Parsing**:
+   - Incorporate OCR and image-based PDF table extraction (Unstructured / LlamaParse).
