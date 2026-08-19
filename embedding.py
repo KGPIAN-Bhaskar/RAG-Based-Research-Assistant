@@ -12,8 +12,10 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
         self.api_key = api_key
         self.model_name = model_name
         self.client = genai.Client(api_key=self.api_key)
+        self.last_call_duration = 0.0
 
     def __call__(self, input: Documents) -> Embeddings:
+        start_time = time.perf_counter()
         try:
             def embed_one(text: str):
                 max_retries = 6
@@ -42,5 +44,6 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 embeddings = list(executor.map(embed_one, input))
             return embeddings
-        except Exception as e:
-            raise e
+        finally:
+            self.last_call_duration = time.perf_counter() - start_time
+

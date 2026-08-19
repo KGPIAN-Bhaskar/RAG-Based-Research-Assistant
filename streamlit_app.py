@@ -336,6 +336,9 @@ if "chat_history" not in st.session_state:
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = {}  # filename -> {chunk_count, size_bytes}
 
+if "doc_embedding_time" not in st.session_state:
+    st.session_state.doc_embedding_time = 0.0
+
 if "reranker" not in st.session_state:
     st.session_state.reranker = Reranker()
     st.session_state.reranker._load_model()
@@ -407,6 +410,7 @@ with st.sidebar:
                 st.session_state.vector_db.reset_db()
             st.session_state.uploaded_files = {}
             st.session_state.chat_history = []
+            st.session_state.doc_embedding_time = 0.0
             st.success("Database cleared!")
             st.rerun()
 
@@ -429,6 +433,7 @@ if ingest_button and uploaded_files:
                 st.session_state.vector_db.get_or_create_collection(collection_name)
                 
                 total_chunks_added = 0
+                total_embedding_time = 0.0
                 st.session_state.uploaded_files = {}  # Reset metadata
                 
                 # 2. Iterate and Parse Each File
@@ -443,11 +448,14 @@ if ingest_button and uploaded_files:
                             metadatas=metadatas,
                             ids=ids
                         )
+                        total_embedding_time += st.session_state.vector_db.emb_fn.last_call_duration
                         total_chunks_added += len(chunks)
                         st.session_state.uploaded_files[filename] = {
                             "chunk_count": len(chunks),
                             "size_bytes": uploaded_file.size
                         }
+                
+                st.session_state.doc_embedding_time = total_embedding_time
                 
                 # Collection reference is handled by vector_db manager
                 st.sidebar.success(f"Successfully ingested {len(uploaded_files)} files into {total_chunks_added} chunks!")
@@ -460,7 +468,7 @@ st.markdown('<h1 class="gradient-title">RAG Based Research Assistant</h1>', unsa
 st.markdown('<p class="subtitle">Fully browser-hosted paper analysis & question answering powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
 # Top Metric Stats (Dynamic Row)
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     st.markdown(f"""
         <div class="metric-card">
@@ -492,6 +500,15 @@ with col4:
         <div class="metric-card">
             <div class="metric-title">Database Size</div>
             <div class="metric-val">{total_size:.2f} MB</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col5:
+    emb_time = st.session_state.get("doc_embedding_time", 0.0)
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">Document Embedding Time</div>
+            <div class="metric-val">{emb_time:.1f} sec</div>
         </div>
     """, unsafe_allow_html=True)
 
