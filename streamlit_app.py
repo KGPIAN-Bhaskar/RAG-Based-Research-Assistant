@@ -609,50 +609,35 @@ with main_layout_col:
     st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
-    # Top Metric Stats (Dynamic Row)
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.markdown(f"""
+    # Top Metric Stats (Dynamic Grid Row)
+    total_chunks = sum(f["chunk_count"] for f in st.session_state.uploaded_files.values())
+    total_size = sum(f["size_bytes"] for f in st.session_state.uploaded_files.values()) / (1024 * 1024)
+    emb_time = st.session_state.get("doc_embedding_time", 0.0)
+
+    st.markdown(f"""
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
             <div class="metric-card">
                 <div class="metric-title">Gemini Model</div>
-                <div class="metric-val" style="font-size: 1.1rem; color: #a5b4fc; margin-top: 5px;">{selected_model_id}</div>
+                <div class="metric-val" style="font-size: 1.05rem; color: #a5b4fc; margin-top: 5px;">{selected_model_id}</div>
             </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Ingested Documents</div>
                 <div class="metric-val">{len(st.session_state.uploaded_files)}</div>
             </div>
-        """, unsafe_allow_html=True)
-
-    with col3:
-        total_chunks = sum(f["chunk_count"] for f in st.session_state.uploaded_files.values())
-        st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Total Chunks</div>
                 <div class="metric-val">{total_chunks}</div>
             </div>
-        """, unsafe_allow_html=True)
-
-    with col4:
-        total_size = sum(f["size_bytes"] for f in st.session_state.uploaded_files.values()) / (1024 * 1024)
-        st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Database Size</div>
                 <div class="metric-val">{total_size:.2f} MB</div>
             </div>
-        """, unsafe_allow_html=True)
-
-    with col5:
-        emb_time = st.session_state.get("doc_embedding_time", 0.0)
-        st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Document Embedding Time</div>
                 <div class="metric-val">{emb_time:.1f} sec</div>
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
 
     # Main Application Tabs
     tab_chat, tab_summary, tab_insights = st.tabs([
@@ -663,13 +648,11 @@ with main_layout_col:
 
     # --- TAB 1: Chat Interface ---
     with tab_chat:
-        # Clear Chat and Warning header row
-        col_warn, col_clear = st.columns([0.88, 0.12])
-        with col_warn:
-            if not st.session_state.vector_db or not st.session_state.vector_db.collection:
-                st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
-        with col_clear:
-            if st.button("Clear Chat", type="secondary", use_container_width=True):
+        if not st.session_state.vector_db or not st.session_state.vector_db.collection:
+            st.warning("⚠️ No documents uploaded and processed. The Assistant will run in basic mode (general knowledge without RAG context). Please upload and process documents in the sidebar to activate the research repository.")
+
+        if st.session_state.chat_history:
+            if st.button("Clear Chat", type="secondary"):
                 st.session_state.chat_history = []
                 st.rerun()
 
