@@ -15,7 +15,7 @@ load_dotenv()
 
 # --- Page Config ---
 st.set_page_config(
-    page_title="Bhaskar's RAG Based Research Assistant",
+    page_title="Enterprise Systems ",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -464,8 +464,8 @@ if ingest_button and uploaded_files:
                 st.sidebar.error(f"Ingestion failed: {str(e)}")
 
 # --- Main App Layout ---
-st.markdown('<h1 class="gradient-title">RAG Based Research Assistant</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Fully browser-hosted paper analysis & question answering powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="gradient-title">Enterprise RAG Systems</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Client-side document intelligence & high-precision Q&A powered by Gemini & ChromaDB</p>', unsafe_allow_html=True)
 
 # Top Metric Stats (Dynamic Row)
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -480,7 +480,7 @@ with col1:
 with col2:
     st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Ingested Papers</div>
+            <div class="metric-title">Ingested Documents</div>
             <div class="metric-val">{len(st.session_state.uploaded_files)}</div>
         </div>
     """, unsafe_allow_html=True)
@@ -489,7 +489,7 @@ with col3:
     total_chunks = sum(f["chunk_count"] for f in st.session_state.uploaded_files.values())
     st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Total Text Chunks</div>
+            <div class="metric-title">Total Chunks</div>
             <div class="metric-val">{total_chunks}</div>
         </div>
     """, unsafe_allow_html=True)
