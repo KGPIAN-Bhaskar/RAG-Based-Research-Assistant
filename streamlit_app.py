@@ -338,6 +338,7 @@ if "uploaded_files" not in st.session_state:
 
 if "reranker" not in st.session_state:
     st.session_state.reranker = Reranker()
+    st.session_state.reranker._load_model()
 
 # --- Sidebar UI Configuration ---
 with st.sidebar:
@@ -628,17 +629,18 @@ CONTEXT:
                     contents=f"{system_prompt}\n\nQuery: {user_query}"
                 )
                 
+                # Pre-compute citation HTML string once outside the streaming loop
+                citation_html = ""
+                if retrieved_sources:
+                    citation_html += '<div class="citation-container">'
+                    for src in retrieved_sources:
+                        citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
+                    citation_html += '</div>'
+
                 for chunk in response:
                     if chunk.text:
                         full_response += chunk.text
-                    # Render response in real-time
-                    citation_html = ""
-                    if retrieved_sources:
-                        citation_html += '<div class="citation-container">'
-                        for src in retrieved_sources:
-                            citation_html += f'<span class="citation-tag">📄 {src["source"]} (Page {src["page"]})</span>'
-                        citation_html += '</div>'
-                        
+                    
                     assistant_placeholder.markdown(f"""
                         <div class="chat-bubble assistant-bubble">
                             <div class="chat-header" style="color: #a5b4fc; display: flex; align-items: center; gap: 8px;">

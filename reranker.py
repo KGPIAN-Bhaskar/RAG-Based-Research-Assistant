@@ -1,4 +1,5 @@
 import logging
+import torch
 from typing import List, Dict, Tuple
 from sentence_transformers import CrossEncoder
 
@@ -37,17 +38,28 @@ class Reranker:
         if not documents:
             return [], [], []
 
-        # Ensure top_p does not exceed the available candidate count
-        effective_p = min(top_p, len(documents))
-
         try:
             self._load_model()
-            pairs = [[query, doc] for doc in documents]
-            scores = self.model.predict(pairs)
+
+            # De-duplicate identical candidate documents while preserving corresponding metadatas
+            seen_texts = set()
+            unique_docs = []
+            unique_metadatas = []
+            for doc, meta in zip(documents, metadatas):
+                if doc not in seen_texts:
+                    seen_texts.add(doc)
+                    unique_docs.append(doc)
+                    unique_metadatas.append(meta)
+
+            effective_p = min(top_p, len(unique_docs))
+            pairs = [[query, doc] for doc in unique_docs]
+
+            with torch.inference_mode():
+                scores = self.model.predict(pairs, batch_size=32, show_progress_bar=False)
 
             # Zip scores, documents, and metadatas together and sort descending by score
             scored_tuples = sorted(
-                zip(scores, documents, metadatas),
+                zip(scores, unique_docs, unique_metadatas),
                 key=lambda x: float(x[0]),
                 reverse=True
             )
@@ -61,4 +73,5 @@ class Reranker:
         except Exception as e:
             logger.error(f"Reranker failed with error: {e}. Falling back to standard vector search ordering.")
             # Graceful Fallback: Return top_p items directly from candidate list without breaking execution
+            effective_p = min(top_p, len(documents))
             return documents[:effective_p], metadatas[:effective_p], []

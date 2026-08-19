@@ -10,7 +10,6 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
 
     def __call__(self, input: Documents) -> Embeddings:
         try:
-            # We define an embedding worker to run concurrently
             def embed_one(text: str):
                 res = self.client.models.embed_content(
                     model=self.model_name,
@@ -18,8 +17,10 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
                 )
                 return res.embeddings[0].values
 
-            # Ingest chunks concurrently to speed up the process significantly
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            if len(input) == 1:
+                return [embed_one(input[0])]
+
+            with ThreadPoolExecutor(max_workers=min(10, len(input))) as executor:
                 embeddings = list(executor.map(embed_one, input))
             return embeddings
         except Exception as e:
