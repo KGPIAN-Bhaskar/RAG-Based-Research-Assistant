@@ -21,7 +21,8 @@ class SimpleTextSplitter:
                 return [txt]
             
             if not seps:
-                return [txt[i:i+self.chunk_size] for i in range(0, len(txt), self.chunk_size - self.chunk_overlap)]
+                step = max(1, self.chunk_size - self.chunk_overlap)
+                return [txt[i:i+self.chunk_size] for i in range(0, len(txt), step)]
             
             sep = seps[0]
             parts = txt.split(sep)
@@ -52,7 +53,7 @@ class SimpleTextSplitter:
         # Prepend overlap from previous chunks
         overlapped_chunks = []
         for i, chunk in enumerate(chunks):
-            if i == 0:
+            if i == 0 or self.chunk_overlap <= 0:
                 overlapped_chunks.append(chunk)
             else:
                 prev_chunk = chunks[i-1]

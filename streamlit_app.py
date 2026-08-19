@@ -365,6 +365,10 @@ with st.sidebar:
     st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Document Ingestion Parameters</h3>', unsafe_allow_html=True)
     
     chunk_size = st.slider("Chunk Size (characters)", min_value=300, max_value=2000, value=800, step=100)
+    chunk_overlap = st.slider("Chunk Overlap (characters)", min_value=0, max_value=max(0, chunk_size - 50), value=min(150, max(0, chunk_size - 50)), step=25)
+    
+    if chunk_overlap < 0 or chunk_overlap >= chunk_size:
+        st.sidebar.error("⚠️ Invalid Chunk Overlap: Must satisfy 0 <= Chunk Overlap < Chunk Size.")
     
     st.markdown('<h3 style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Retrieval & Reranking Parameters</h3>', unsafe_allow_html=True)
     top_k = st.slider("Vector Candidates (Top-K)", min_value=5, max_value=25, value=10, step=1)
@@ -409,6 +413,8 @@ with st.sidebar:
 if ingest_button and uploaded_files:
     if not api_key:
         st.sidebar.error("Please provide a Gemini API Key to process documents!")
+    elif chunk_overlap < 0 or chunk_overlap >= chunk_size:
+        st.sidebar.error("Cannot process documents: Chunk Overlap must be non-negative and strictly less than Chunk Size!")
     else:
         with st.spinner("Processing & Ingesting documents..."):
             try:
@@ -427,7 +433,7 @@ if ingest_button and uploaded_files:
                 # 2. Iterate and Parse Each File
                 for uploaded_file in uploaded_files:
                     filename = uploaded_file.name
-                    chunks, metadatas, ids = parse_document(uploaded_file, chunk_size, chunk_overlap=150)
+                    chunks, metadatas, ids = parse_document(uploaded_file, chunk_size, chunk_overlap=chunk_overlap)
                     
                     # 3. Add to ChromaDB in batches
                     if chunks:
