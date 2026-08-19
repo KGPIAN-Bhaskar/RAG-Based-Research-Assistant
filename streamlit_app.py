@@ -1,9 +1,15 @@
 import streamlit as st
 import os
+import sys
 import time
 import chromadb
 from google import genai
 from dotenv import load_dotenv
+
+# Ensure project directory is in sys.path for robust relative module imports
+project_dir = os.path.dirname(os.path.abspath(__file__))
+if project_dir not in sys.path:
+    sys.path.insert(0, project_dir)
 
 # Import backend RAG processing logic & Vector DB logic
 from app import parse_document
